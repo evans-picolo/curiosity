@@ -1,15 +1,15 @@
 /*
- * Curisosity 1.1
+ * Curisosity 1.2
  * 
  * Controla o robô curiosity
  * 
  * by Evans Picolo
  * Asthor Barden
- * 18/12/2019
+ * 
  * 
  * Features:
- *   -  Controle básico servo (frente, direita e esquerda)
- *   -  Controle básico do motor (frente, tras e parado)
+ *   -  Limitação da velocidade 
+ *   -  Diminuição do delay de estabilização (para diminui o tempo de resposta)
  * 
  */
 
@@ -28,6 +28,14 @@
 #define MOTOR_CENTRAL_ESQUERDO_FRENTE 10      // NOTE QUE ESSES ÚLTIMOS ESTÃO CRUZADOS DEVIDO À DISPOSIÇÃO DOS PINOS PWM   
 
 
+// Definição da velocidade
+#define VELOCIDADE 150   // na verdade, é o duty cicle (0 a 255)
+
+
+// Definição do delay entre um loop e outro (estabilização)
+#define TEMPO_ESTABILIZACAO 100    // ms
+
+
 // Declaração dos servos
 Servo servoFrente;  
 Servo servoTras;
@@ -41,56 +49,60 @@ char inChar;   // para ler o BT
 
 void para(){
   // Para todos o motores
-  digitalWrite(MOTOR_DIREITO_RE,LOW);
-  digitalWrite(MOTOR_DIREITO_FRENTE,LOW);
-  digitalWrite(MOTOR_ESQUERDO_RE,LOW);
-  digitalWrite(MOTOR_ESQUERDO_FRENTE,LOW);
-  digitalWrite(MOTOR_CENTRAL_DIREITO_RE,LOW);
-  digitalWrite(MOTOR_CENTRAL_DIREITO_FRENTE,LOW);
-  digitalWrite(MOTOR_CENTRAL_ESQUERDO_RE,LOW);
-  digitalWrite(MOTOR_CENTRAL_ESQUERDO_FRENTE,LOW);
+  digitalWrite( MOTOR_DIREITO_RE              , LOW        );
+  analogWrite ( MOTOR_DIREITO_FRENTE          , 0          );
+  digitalWrite( MOTOR_ESQUERDO_RE             , LOW        );
+  analogWrite ( MOTOR_ESQUERDO_FRENTE         , 0          );
+  digitalWrite( MOTOR_CENTRAL_DIREITO_RE      , LOW        );
+  analogWrite ( MOTOR_CENTRAL_DIREITO_FRENTE  , 0          );
+  digitalWrite( MOTOR_CENTRAL_ESQUERDO_RE     , LOW        );
+  analogWrite ( MOTOR_CENTRAL_ESQUERDO_FRENTE , 0          );
 }
 
 void re(){
   // More carrinho para trás
-  digitalWrite(MOTOR_DIREITO_RE,HIGH);
-  digitalWrite(MOTOR_DIREITO_FRENTE,LOW);
-  digitalWrite(MOTOR_ESQUERDO_RE,HIGH);
-  digitalWrite(MOTOR_ESQUERDO_FRENTE,LOW);
-  digitalWrite(MOTOR_CENTRAL_DIREITO_RE,HIGH);
-  digitalWrite(MOTOR_CENTRAL_DIREITO_FRENTE,LOW);
-  digitalWrite(MOTOR_CENTRAL_ESQUERDO_RE,HIGH);
-  digitalWrite(MOTOR_CENTRAL_ESQUERDO_FRENTE,LOW);
+  // Usando complemento do duty cicle pois os pinos PWM agora são o bit negativo
+  digitalWrite( MOTOR_DIREITO_RE              , HIGH             );
+  analogWrite ( MOTOR_DIREITO_FRENTE          , 255 - VELOCIDADE );
+  digitalWrite( MOTOR_ESQUERDO_RE             , HIGH             );
+  analogWrite ( MOTOR_ESQUERDO_FRENTE         , 255 - VELOCIDADE );
+  digitalWrite( MOTOR_CENTRAL_DIREITO_RE      , HIGH             );
+  analogWrite ( MOTOR_CENTRAL_DIREITO_FRENTE  , 255 - VELOCIDADE );
+  digitalWrite( MOTOR_CENTRAL_ESQUERDO_RE     , HIGH             );
+  analogWrite ( MOTOR_CENTRAL_ESQUERDO_FRENTE , 255 - VELOCIDADE );
 }
 
 void frente(){
   // Move carrinho para frente
-  digitalWrite(MOTOR_DIREITO_RE,LOW);
-  digitalWrite(MOTOR_DIREITO_FRENTE,HIGH);
-  digitalWrite(MOTOR_ESQUERDO_RE,LOW);
-  digitalWrite(MOTOR_ESQUERDO_FRENTE,HIGH);
-  digitalWrite(MOTOR_CENTRAL_DIREITO_RE,LOW);
-  digitalWrite(MOTOR_CENTRAL_DIREITO_FRENTE,HIGH);
-  digitalWrite(MOTOR_CENTRAL_ESQUERDO_RE,LOW);
-  digitalWrite(MOTOR_CENTRAL_ESQUERDO_FRENTE,HIGH);
+  digitalWrite( MOTOR_DIREITO_RE              , LOW        );
+  analogWrite ( MOTOR_DIREITO_FRENTE          , VELOCIDADE );
+  digitalWrite( MOTOR_ESQUERDO_RE             , LOW        );
+  analogWrite ( MOTOR_ESQUERDO_FRENTE         , VELOCIDADE );
+  digitalWrite( MOTOR_CENTRAL_DIREITO_RE      , LOW        );
+  analogWrite ( MOTOR_CENTRAL_DIREITO_FRENTE  , VELOCIDADE );
+  digitalWrite( MOTOR_CENTRAL_ESQUERDO_RE     , LOW        );
+  analogWrite ( MOTOR_CENTRAL_ESQUERDO_FRENTE , VELOCIDADE );
 }
 
 
 // Funções de controle do servo
 
 void viraFrente(){
+  // Alinha os dois servos
   servoFrente.write(90);
   servoTras.write(90);
 }
 
 
 void viraDireita(){
+  // Gira motores dianteiros para direita e traseiros para esquerda
   servoFrente.write(135);
   servoTras.write(45);
 }
 
 
 void viraEsquerda(){
+  // Gira motores dianteiros para esquerda e traseiros para direita
   servoFrente.write(45);
   servoTras.write(135);
 }
@@ -100,19 +112,19 @@ void viraEsquerda(){
 void setup() {
 
   // Configura pinos dos motores
-  pinMode(MOTOR_DIREITO_RE,OUTPUT);
-  pinMode(MOTOR_DIREITO_FRENTE,OUTPUT);
-  pinMode(MOTOR_ESQUERDO_RE,OUTPUT);
-  pinMode(MOTOR_ESQUERDO_FRENTE,OUTPUT);
-  pinMode(MOTOR_CENTRAL_DIREITO_RE,OUTPUT);
-  pinMode(MOTOR_CENTRAL_DIREITO_FRENTE,OUTPUT);
-  pinMode(MOTOR_CENTRAL_ESQUERDO_RE,OUTPUT);
-  pinMode(MOTOR_CENTRAL_ESQUERDO_FRENTE,OUTPUT);
+  pinMode(MOTOR_DIREITO_RE, OUTPUT);
+  pinMode(MOTOR_DIREITO_FRENTE, OUTPUT);
+  pinMode(MOTOR_ESQUERDO_RE, OUTPUT);
+  pinMode(MOTOR_ESQUERDO_FRENTE, OUTPUT);
+  pinMode(MOTOR_CENTRAL_DIREITO_RE, OUTPUT);
+  pinMode(MOTOR_CENTRAL_DIREITO_FRENTE, OUTPUT);
+  pinMode(MOTOR_CENTRAL_ESQUERDO_RE, OUTPUT);
+  pinMode(MOTOR_CENTRAL_ESQUERDO_FRENTE, OUTPUT);
   
   // Define pinos dos servos
   servoFrente.attach(6); 
   servoTras.attach(7);
-
+  
   //Inicia comunicação serial em 9600 b/s
   Serial.begin(9600);
   Serial.println("\n\n>>START");
@@ -168,7 +180,7 @@ void loop() {
     
 
     // Delay para estabilização
-    delay(500);
+    delay(TEMPO_ESTABILIZACAO);
   }
 
 }
