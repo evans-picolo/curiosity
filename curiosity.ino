@@ -1,15 +1,15 @@
 /*
- * Curisosity 1.2
+ * Curisosity
  * 
  * Controla o robô curiosity
  * 
  * by Evans Picolo
  * Asthor Barden
+ * 19/12/2019
  * 
- * 
- * Features:
- *   -  Limitação da velocidade 
- *   -  Diminuição do delay de estabilização (para diminui o tempo de resposta)
+ * Novo:
+ *   -  Alteração do pinos para solucionar o conflito servo x PWM
+ *   -  Alteração do setup para iniciar com motores parados
  * 
  */
 
@@ -18,14 +18,19 @@
 
 
 // Definição dos pinos dos motores
-#define MOTOR_DIREITO_RE              02    
-#define MOTOR_DIREITO_FRENTE          03    
-#define MOTOR_ESQUERDO_RE             04    
-#define MOTOR_ESQUERDO_FRENTE         05
-#define MOTOR_CENTRAL_DIREITO_RE      13    
+#define MOTOR_DIREITO_RE              2    
+#define MOTOR_DIREITO_FRENTE          3    
+#define MOTOR_ESQUERDO_RE             4    
+#define MOTOR_ESQUERDO_FRENTE         5
+#define MOTOR_CENTRAL_DIREITO_RE      12    
 #define MOTOR_CENTRAL_DIREITO_FRENTE  11    
-#define MOTOR_CENTRAL_ESQUERDO_RE     12     
-#define MOTOR_CENTRAL_ESQUERDO_FRENTE 10      // NOTE QUE ESSES ÚLTIMOS ESTÃO CRUZADOS DEVIDO À DISPOSIÇÃO DOS PINOS PWM   
+#define MOTOR_CENTRAL_ESQUERDO_RE     7     
+#define MOTOR_CENTRAL_ESQUERDO_FRENTE 6      
+
+
+// Definição dos pinos dos servos
+#define SERVO_FRENTE 8
+#define SERVO_TRAS   9
 
 
 // Definição da velocidade
@@ -122,14 +127,15 @@ void setup() {
   pinMode(MOTOR_CENTRAL_ESQUERDO_FRENTE, OUTPUT);
   
   // Define pinos dos servos
-  servoFrente.attach(6); 
-  servoTras.attach(7);
+  servoFrente.attach(SERVO_FRENTE); 
+  servoTras.attach(SERVO_TRAS);
   
   //Inicia comunicação serial em 9600 b/s
   Serial.begin(9600);
   Serial.println("\n\n>>START");
 
-  // Inicia com servos para frente
+  // Inicia parado e virado para frente
+  para();
   viraFrente();
 
   // Espera um tempo antes de começar
